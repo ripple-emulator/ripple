@@ -28,7 +28,7 @@ window.addEventListener("load", function () {
     if (metaData.justInstalled) {
         body = "Visit our <a href=\"http://ripple.incubator.apache.org/#documentation\" target=\"_blank\">documentation site</a> to get started.";
     } else {
-        body = "See what's new in <a href=\"https://github.com/apache/incubator-ripple/blob/master/doc/CHANGELOG.md\"" +
+        body = "See what's new in <a href=\"https://github.com/ripple-emulator/ripple/blob/master/doc/CHANGELOG.md\"" +
             " target=\"_blank\">v" + metaData.version + "</a>.";
     }
 

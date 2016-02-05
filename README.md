@@ -19,7 +19,7 @@
 #
 -->
 
-# Apache Ripple(tm)
+# Ripple Emulator(tm)
 
 A browser based, platform agnostic mobile application development and testing tool.
 
@@ -43,7 +43,7 @@ A browser based, platform agnostic mobile application development and testing to
 
 ## Getting Started
 
-If you plan to dive into the source, be sure to check out the [HACKING](https://github.com/apache/incubator-ripple/blob/master/HACKING.md) file.
+If you plan to dive into the source, be sure to check out the [HACKING](https://github.com/ripple-emulator/ripple/blob/master/HACKING.md) file.
 
 To get started, you need to setup a few things, first- run (in the project root):
 
@@ -95,9 +95,7 @@ This will install a global script called `ripple`. To see usage, run:
 
 ## Contributing
 
-If you like the project, and want to contribute code, please issue a pull request (on [GitHub](https://github.com/apache/incubator-ripple/pulls)) into the `master` branch.
-
-Note: You will need to submit an Apache [ICLA](http://www.apache.org/licenses/#clas) (Individual Contributor License Agreement) for your contribution to be accepted.
+If you like the project, and want to contribute code, please issue a pull request (on [GitHub](https://github.com/ripple-emulator/ripple/pulls)) into the `master` branch.
 
 ## Code Guidelines
 
@@ -107,4 +105,4 @@ Note: You will need to submit an Apache [ICLA](http://www.apache.org/licenses/#c
 
 ## Reference Material &amp; Community
 
-* [Project Site](http://ripple.incubator.apache.org)
+* [Project Site](https://github.com/ripple-emulator)
