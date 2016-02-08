@@ -20,6 +20,7 @@
  */
 var colors = require('colors'),
     jWorkflow = require('jWorkflow'),
+    Q = require('q'),
     quotes = require('./quotes'),
     pack = require('./pack'),
     clean = require('./clean'),
@@ -28,28 +29,33 @@ var colors = require('colors'),
 
 colors.mode = "console";
 
-function _done(error) {
+function _done(error, done) {
+    if (typeof error === "function") {
+        done = error;
+        error = null;
+    }
+
     if (error) {
         console.log("Build failed: ".red + error.toString().red);
-        process.exit(1);
+        (done || process.exit)(1);
     } else {
         console.log("Build succeeded.".green);
         quotes.random();
-        process.exit();
+        (done || process.exit)();
     }
 }
 
 function _handle(func) {
-    return function () {
+    return function (ext, opts, done) {
         try {
             func.apply(func, Array.prototype.slice.call(arguments));
         } catch (e) {
-            _done(e.message + "\n" + e.stack);
+            _done(e.message + "\n" + e.stack, done);
         }
     };
 }
 
-module.exports = _handle(function (ext, opts) {
+var build = module.exports = _handle(function (ext, opts, done) {
     opts = opts || {};
 
     var build = jWorkflow.order(clean)
@@ -61,6 +67,18 @@ module.exports = _handle(function (ext, opts) {
     }
 
     build.start(function () {
-        _done();
+        _done(done);
     });
 });
+
+module.exports.promise = function (ext, opts) {
+    var d = Q.defer();
+    build(ext, opts, function (code) {
+        if (code) {
+            d.reject(code);
+        } else {
+            d.resolve();
+        }
+    });
+    return d.promise;
+};

@@ -27,6 +27,7 @@ var jsdom = require('jsdom'),
     accounting = require('accounting'),
     jasmine = require('./test/jasmine-node'),
     nodeXMLHttpRequest = require('xmlhttprequest').XMLHttpRequest,
+    Q = require('q'),
     _c = require('./conf');
 
 function _extraMocks() {
@@ -81,7 +82,7 @@ function _setupEnv(ready) {
     });
 }
 
-module.exports = function (customPaths, done, opts) {
+var test = module.exports = function (customPaths, done, opts) {
     if (!opts) { opts = {}; }
 
     //HACK: this should be  taken out if our pull request in jasmine is accepted.
@@ -140,4 +141,16 @@ module.exports = function (customPaths, done, opts) {
             (typeof done !== "function" ? process.exit : done)(failed);
         });
     });
+};
+
+module.exports.promise = function (customPaths, opts) {
+    var d = Q.defer();
+    test(customPaths, function (code) {
+        if (code) {
+            d.reject(code);
+        } else {
+            d.resolve();
+        }
+    }, opts);
+    return d.promise;
 };
