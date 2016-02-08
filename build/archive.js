@@ -20,11 +20,20 @@
  */
 
 var child_process = require('child_process'),
-    fs = require('fs'),
-    jWorkflow = require('jWorkflow'),
+    colors = require('colors'),
+    Q = require('q'),
     semver = require('semver'),
-    path = require('path'),
-    _c = require('./conf');
+    lint = require('./lint'),
+    build = require('./build'),
+    test = require('./test');
+
+colors.mode = "console";
+
+var allowPending = false,
+    tagName = '',
+    noTest = false,
+    noLint = false,
+    noBuild = false;
 
 module.exports = function (options) {
     if (options.length === 1 && options[0].toLowerCase() === "help") {
@@ -32,93 +41,116 @@ module.exports = function (options) {
         return;
     }
 
-    var config = processOptions(options);
-
-    var order = jWorkflow.order(verifyBuiltFiles)
-        .andThen(verifyTagName)
-        .andThen(checkoutTag);
-
-    if (!config.allowPending) {
-        order.andThen(checkPendingChanges);
-    }
-
-    order.andThen(buildPackage);
-
-    if (config.sign) {
-        order.andThen(signArchive)
-            .andThen(computeMd5Hash)
-            .andThen(computeShaHash);
-    }
-
-    order.start({initialValue: config, callback: done});
+    processOptions(options);
+    verifyTagName()
+        .then(checkPendingChanges)
+        .then(checkoutTag)
+        .then(runTests)
+        .then(runLint)
+        .then(runBuild)
+        .then(buildPackage)
+        .then(done)
+        .catch(handleError);
 };
 
-function done(result) {
-    if (!result || !result.failed) {
-        console.log('\nArchive created.');
+var currentTask;
+function handleError(error) {
+    var code = 1;
+
+    if (typeof error === "number") {
+        // This should only come from test, lint or build
+        code = error;
+        error = 'Error: Task \'' + currentTask + '\' failed.';
+    } else {
+        error = '' + (error.message || error);
     }
+
+    console.log(error.red);
+    process.exit(code);
 }
 
-function processOptions(options, baton) {
-    var packageType,
-        allowPending = false,
-        tagName = null;
+var warnings;
+function registerWarning(msg) {
+    warnings = warnings || [];
+    warnings.push(msg);
+}
 
+function outputStep(msg) {
+    console.log(msg.blue);
+}
+
+function runTests() {
+    return runTask(test, "Test", noTest);
+}
+
+function runLint() {
+    return runTask(lint, "Lint", noLint);
+}
+
+function runBuild() {
+    return runTask(build, "Build", noBuild);
+}
+
+function runTask(task, taskName, skip) {
+    if (skip) {
+        registerWarning('Didn\'t run task \'' + taskName + '\'');
+        return Q.when();
+    }
+    outputStep('Running task \'' + taskName + '\'...');
+    currentTask = taskName;
+    return task.promise();
+}
+
+function done(result) {
+    if (result) {
+        console.log('Package created: ' + result);
+        if (warnings && warnings.length) {
+            console.log(('Warning: Use this package for testing only.\n  ' + warnings.join('\n  ')).yellow);
+        }
+        console.log();
+        process.exit(0);
+    }
+    process.exit(1);
+}
+
+function processOptions(options) {
     options.forEach(function (option) {
         var lowerCaseOption = option.toLowerCase();
         switch (lowerCaseOption) {
-            case 'apache':
-            case 'npm':
-                if (packageType) {
-                    error("Can't set package type to '" + option + "' when it is already set to '" + packageType + "'.", baton);
-                }
-                packageType = lowerCaseOption;
-                break;
-
             case 'allow-pending':
                 allowPending = true;
                 break;
 
+            case 'no-test':
+                noTest = true;
+                break;
+
+            case 'no-lint':
+                noLint = true;
+                break;
+
+            case 'no-build':
+                noBuild = true;
+                break;
+
             default:
                 if (tagName) {
-                    error("Can't set tag name to '" + option + "' when it is already set to '" + tagName + "'.", baton);
+                    handleError("Error: Can't set tag name to '" + option + "' when it is already set to '" + tagName + "'.");
                 }
                 tagName = option;
         }
     });
-
-    var isNpm = packageType === 'npm';
-    return {
-        tagName: tagName,
-        allowPending: !isNpm || allowPending, // Pending files irrelevant when package from git
-        sign: !isNpm,
-        packageType: isNpm ? 'npm' : 'git',
-        includeBuilt: isNpm
-    };
 }
 
-function verifyBuiltFiles(config, baton) {
-    // Require or remove built files
-    if (config.includeBuilt) {
-        // Verify pkg folder exists and contains files
-        if (!fs.existsSync(_c.DEPLOY) || fs.readdirSync(_c.DEPLOY).length === 0) {
-            error('You must build Ripple before creating npm package.', baton);
-        }
-    }
-    return config;
-}
-
-function verifyTagName(config, baton) {
-    baton.take();
-
-    if (config.tagName) {
-        baton.pass(config);
-        return;
+function verifyTagName() {
+    if (tagName) {
+        return Q.when();
     }
 
     // Determine the most recent tag in the repository
-    exec('git tag --list', baton, function (allTags) {
-        config.tagName = allTags.split(/\s+/).reduce(function (currentBest, value) {
+    outputStep('Looking for most recent tag...');
+    return exec('git tag --list').then(function (allTags) {
+        tagName = allTags.split(/\s+/).reduce(function (currentBest, value) {
             var modifiedValue = value.replace(/^v/, '');
             if (semver.valid(modifiedValue)) {
                 return !currentBest ? value : semver.gt(currentBest.replace(/^v/, ''), modifiedValue) ? currentBest : value;
@@ -129,152 +161,86 @@ function verifyTagName(config, baton) {
             return null;
         });
 
-        baton.pass(config);
+        console.log('- found: ' + tagName);
     });
 }
 
-function checkoutTag(config, baton) {
-    baton.take();
-
-    if (!config.tagName) {
-        error("Couldn't find the most recent tag name - please specify a tag or branch explicitly.", baton);
+function checkoutTag() {
+    if (!tagName) {
+        throw "Error: Couldn't find the most recent tag name - please specify a tag or branch explicitly.";
     }
 
-    // Don't checkout the tag if its already checked out
-    exec('git symbolic-ref -q --short HEAD || git describe --tags --exact-match', baton, function (currentBranch) {
-        if (currentBranch === config.tagName) {
-            baton.pass(config);
-            return;
-        }
-
-        exec('git checkout -q ' + config.tagName, baton, function (result) {
-            baton.pass(config);
-        });
-    });
-}
-
-function checkPendingChanges(config, baton) {
-    baton.take();
-
-    if (config.allowPending) {
-        baton.pass(config);
+    if (tagName === 'current') {
+        registerWarning('The package was built from currently checked out files, which may not correctly reflect the package version.');
+        return Q.when();
     }
 
-    exec('git status --porcelain', baton, function (result) {
-        if (result) {
-            error('Aborting because there are pending changes.', baton);
+    outputStep('Checking out tag ' + tagName + '...');
+    return exec('git symbolic-ref -q --short HEAD || git describe --tags --exact-match').then(function (currentBranch) {
+        // Don't checkout the tag if its already checked out
+        if (currentBranch === tagName) {
+            console.log('- tag is already checked out.');
         } else {
-            baton.pass(config);
+            return exec('git checkout -q ' + tagName).then(function () {
+                console.log('- success.');
+            });
         }
     });
 }
 
-function buildPackage(config, baton) {
-    baton.take();
-
-    console.log('Creating archive for tag: ' + config.tagName + '...');
-
-    if (config.packageType === 'npm') {
-        exec('npm pack', baton, function (filename, err) {
-            baton.pass(filename);
-        });
-    } else {
-        var filenameRoot = 'ripple-emulator' + '-' + config.tagName + '-incubating';
-        var filename = path.resolve(filenameRoot + '.tgz');
-        exec('git archive --prefix ' + filenameRoot + '/ -o ' + filename + ' ' + config.tagName, baton, function (result) {
-            baton.pass(filename);
-        });
-    }
-}
-
-function signArchive(filename, baton) {
-    baton.take();
-
-    console.log('Signing archive...');
-    exec('gpg --armor --detach-sig --output ' + filename + '.asc ' + filename, baton, function (result) {
-        baton.pass(filename);
+function checkPendingChanges() {
+    outputStep('Checking for pending local changes...');
+    return exec('git status --porcelain').then(function (result) {
+        if (result) {
+            if (allowPending) {
+                registerWarning('There are pending local changes.');
+            } else {
+                throw 'Error: Aborting because there are pending changes.';
+            }
+        }
     });
 }
 
-function computeMd5Hash(filename, baton) {
-    computeHash(filename, 'md5', 'MD5', baton);
+function buildPackage() {
+    outputStep('Creating package...');
+    return exec('npm pack');
 }
 
-function computeShaHash(filename, baton) {
-    computeHash(filename, 'sha1', 'SHA1', baton);
-}
-
-function computeHash(filename, ext, algo, baton) {
-    baton.take();
-
-    console.log('Computing ' + algo + ' for: ' + filename);
-    exec('gpg --print-md ' + algo + ' ' + filename, baton, function (result) {
-        fs.writeFileSync(filename + '.' + ext, extractHashFromOutput(result) + '\n');
-        baton.pass(filename);
-    });
-
-}
-
-function extractHashFromOutput(output) {
-    var pos = output.lastIndexOf(':');
-    return output.slice(pos + 1).replace(/\s*/g, '').toLowerCase() + ' *' + path.basename(output.slice(0, pos));
-}
-
-function exec(cmdLine, baton, callback) {
-    // If we're provided with a jWorkflow baton, then on error we'll use the baton to deal with it and not call callback().
-    // Otherwise we pass errors to callback().
-
-    if (!callback && typeof baton === 'function') {
-        callback = baton;
-        baton = null;
-    }
+function exec(cmdLine) {
+    var d = Q.defer();
 
     child_process.exec(cmdLine, function (err, stdout, stderr) {
         err = err || stderr;
 
-        if (err && baton) {
-            error(err, baton);
+        if (err || stderr) {
+            d.reject(err || stderr);
         } else {
-            callback((stdout || '').trim(), err);
+            d.resolve((stdout || '').trim());
         }
     });
-}
 
-function error(msg, baton) {
-    console.log();
-
-    if (typeof msg === 'object') {
-        // Error came from console or somewhere. Just display it.
-        console.log('' + msg);
-    } else {
-        // Error likely came from us - display it and also usage.
-        console.log('Error: ' + msg);
-        usage();
-    }
-
-    if (baton) { baton.drop({failed: true}); }
+    return d.promise;
 }
 
 function usage(includeIntro) {
     if (includeIntro) {
         console.log('');
-        console.log('Creates a tgz file for a tag or branch, either for the Apache archives or npm.');
+        console.log('Creates an npm package (tgz file) for a tag or branch.');
     }
 
     console.log('');
     console.log('Usage:');
     console.log('');
-    console.log('jake archive[apache|npm,allow-pending,<tagname>]');
+    console.log('jake pack[allow-pending,no-test,no-lint,no-build,<tagname>]');
     console.log('');
-    console.log('  apache:        (default) Create an Apache archive (creates a git archive,\n' +
-                '                 signs it, and creates .md5 and .sha hashes).');
-    console.log('  npm:           Create an npm package (requires built files to be present,\n' +
-                '                 and does not sign).');
     console.log('  allow-pending: If specified, allow uncommitted changes to exist when\n' +
-                '                 packaging (only use this for testing). This option is\n' +
-                '                 ignored when creating an Apache archive, since that is created\n' +
-                '                 directly from git.');
-    console.log('  <tagname>:     If specified, an existing tag or branch to archive. Otherwise\n' +
-                '                 defaults to the most recent tag.');
+        '                 packaging.');
+    console.log('  no-test:       If specified, don\'t run tests before packaging.');
+    console.log('  no-lint:       If specified, don\'t run lint before packaging');
+    console.log('  no-build:      If specified, don\'t run build before packaging (use currently\n' +
+        '                 built files).');
+    console.log('  <tagname>:     If specified, an existing tag or branch to package. Otherwise\n' +
+        '                 defaults to the most recent tag. Specify \'current\' to use whatever\n' +
+        '                 is currently on your local machine (only use this for testing).');
 }
 

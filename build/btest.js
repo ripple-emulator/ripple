@@ -23,7 +23,7 @@ var connect = require('connect'),
     path = require('path'),
     utils = require('./utils'),
     _c = require('./conf'),
-    pack = require('./pack');
+    pack = require('./pack-files');
 
 module.exports = function () {
     var tests = [],

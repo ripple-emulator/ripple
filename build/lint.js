@@ -42,10 +42,6 @@ var lint = module.exports = function (files, done) {
         done = files;
         files = [];
     }
-    if (typeof done === "undefined") {
-        // if we given no callback, use stub
-        done = function () {};
-    }
 
     var job,
         opts = {
@@ -66,11 +62,14 @@ var lint = module.exports = function (files, done) {
             doneCount++;
             /* both jshint and csslint are completed */
             if (doneCount === 2) {
-                done(lintCode);
-                if (lintCode) {
-                    fail(lintErrorMessage.substring(1), lintCode);
+                if (done) {
+                    done(lintCode);
                 } else {
-                    complete();
+                    if (lintCode) {
+                        fail(lintErrorMessage.substring(1), lintCode);
+                    } else {
+                        complete();
+                    }
                 }
             }
         });

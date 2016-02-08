@@ -69,8 +69,8 @@ task('fixwhitespace', function() {
     }, complete);
 }, true);
 
-desc('creates an archive - jake archive[clean:<value>,sign:<value>,tag:<tagname>] or jake archive[help]');
-task('archive', [], function () {
+desc('builds then creates an npm package - jake pack[allow-pending,no-test,no-lint,no-build,<tagname>] or jake pack[help]');
+task('pack', [], function () {
     require('./build/archive')(Array.prototype.slice.apply(arguments));
 });
 
