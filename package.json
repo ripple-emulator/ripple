@@ -7,10 +7,12 @@
     "name": "Ripple Emulator Community",
     "url": "https://github.com/ripple-emulator"
   },
-  "licenses": [{
-    "type": "Apache-2.0",
-    "url": "http://www.apache.org/licenses/LICENSE-2.0"
-  }],
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ripple-emulator/ripple"
@@ -24,7 +26,9 @@
     "test",
     "emulator"
   ],
-  "bin": { "ripple": "./bin/ripple" },
+  "bin": {
+    "ripple": "./bin/ripple"
+  },
   "main": "./lib/index",
   "dependencies": {
     "accounting": "0.x.x",
@@ -41,11 +45,12 @@
     "coverjs": "0.0.14",
     "cssmin": "0.3.1",
     "html-minifier": "0.4.5",
-    "jsdom": "3.1.0",
     "jWorkflow": "0.x.x",
+    "jsdom": "3.1.0",
+    "q": "^1.4.1",
     "semver": "^4.3.1",
-    "xmlhttprequest": "1.4.2",
-    "shelljs": "^0.4.0"
+    "shelljs": "^0.4.0",
+    "xmlhttprequest": "1.4.2"
   },
   "files": [
     "README.md",
@@ -60,6 +65,6 @@
   ],
   "engines": {
     "node": ">= 0.12.0",
-    "npm":  ">= 2.5.1"
+    "npm": ">= 2.5.1"
   }
 }

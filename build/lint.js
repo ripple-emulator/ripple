@@ -20,10 +20,11 @@
  */
 /*global jake: false, fail: false, complete: false */
 var _c = require('./conf'),
-    fs = require('fs');
+    fs = require('fs'),
+    Q = require('q');
 
 function _lintJSCommand(files) {
-    files = files.length ? files : ".";
+    files = files && files.length ? files : ".";
     return ["jshint"].concat(files).join(" ");
 }
 
@@ -32,11 +33,11 @@ function _lintCSSCommand(files) {
         rules = JSON.parse(fs.readFileSync(_c.ROOT + ".csslintrc", "utf-8")),
         options = ["--errors=" + rules, "--format=compact", "--quiet"];
 
-    files = files.length ? files : cssDirs;
+    files = files && files.length ? files : cssDirs;
     return ["csslint"].concat(options).concat(files).join(" ");
 }
 
-module.exports = function (files, done) {
+var lint = module.exports = function (files, done) {
     if (typeof files === "function") {
         done = files;
         files = [];
@@ -45,6 +46,7 @@ module.exports = function (files, done) {
         // if we given no callback, use stub
         done = function () {};
     }
+
     var job,
         opts = {
             printStdout: true,
@@ -78,4 +80,16 @@ module.exports = function (files, done) {
     bindEvents(job, "jshint");
     job = jake.exec(_lintCSSCommand(files), opts);
     bindEvents(job, "csslint");
+};
+
+module.exports.promise = function (files) {
+    var d = Q.defer();
+    lint(files, function (code) {
+        if (code) {
+            d.reject(code);
+        } else {
+            d.resolve();
+        }
+    });
+    return d.promise;
 };

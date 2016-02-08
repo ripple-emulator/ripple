@@ -25,19 +25,17 @@ var colors = require('colors'),
 
 colors.mode = "console";
 
-function ok(code) {
-    if (code !== 0) {
-        console.log('Deploy failed.'.red);
-        process.exit(code);
+function handleError(code) {
+    console.log('Deploy failed.'.red);
+    if (typeof code !== 'number') {
+        console.log(code.stack || code);
+        code = 1;
     }
+    process.exit(code);
 }
 
 module.exports = function () {
-    test(null, function (code) {
-        ok(code, "red tests");
-        lint(function (code) {
-            ok(code);
-            build(null, {compress: true});
-        });
-    });
+    test.promise().then(lint.promise, handleError).then(function () {
+        build(null, {compress: true});
+    }, handleError);
 };
