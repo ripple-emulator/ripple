@@ -206,7 +206,7 @@ function checkPendingChanges() {
             if (allowPending) {
                 registerWarning('There are pending local changes.');
             } else {
-                throw 'Error: Aborting because there are pending changes.';
+                throw 'Error: Aborting because there are pending changes. Specify \'allow-pending\' option to ignore.';
             }
         }
     });
