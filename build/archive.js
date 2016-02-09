@@ -33,7 +33,8 @@ var allowPending = false,
     tagName = '',
     noTest = false,
     noLint = false,
-    noBuild = false;
+    noBuild = false,
+    noCompress = false;
 
 module.exports = function (options) {
     if (options.length === 1 && options[0].toLowerCase() === "help") {
@@ -88,17 +89,23 @@ function runLint() {
 }
 
 function runBuild() {
-    return runTask(build, "Build", noBuild);
+    var args;
+    if (noCompress) {
+        registerWarning('Did not compress built files.');
+    } else {
+        args = [null, {compress: true}];
+    }
+    return runTask(build, "Build", noBuild, args);
 }
 
-function runTask(task, taskName, skip) {
+function runTask(task, taskName, skip, args) {
     if (skip) {
         registerWarning('Didn\'t run task \'' + taskName + '\'');
         return Q.when();
     }
     outputStep('Running task \'' + taskName + '\'...');
     currentTask = taskName;
-    return task.promise();
+    return task.promise.apply(task, args);
 }
 
 function done(result) {
@@ -131,6 +138,10 @@ function processOptions(options) {
 
             case 'no-build':
                 noBuild = true;
+                break;
+
+            case 'no-compress':
+                noCompress = true;
                 break;
 
             default:
@@ -231,7 +242,7 @@ function usage(includeIntro) {
     console.log('');
     console.log('Usage:');
     console.log('');
-    console.log('jake pack[allow-pending,no-test,no-lint,no-build,<tagname>]');
+    console.log('jake pack[allow-pending,no-test,no-lint,no-build,no-compress,<tagname>]');
     console.log('');
     console.log('  allow-pending: If specified, allow uncommitted changes to exist when\n' +
         '                 packaging.');
@@ -239,6 +250,7 @@ function usage(includeIntro) {
     console.log('  no-lint:       If specified, don\'t run lint before packaging');
     console.log('  no-build:      If specified, don\'t run build before packaging (use currently\n' +
         '                 built files).');
+    console.log('  no-compress:   If specified, don\'t compress (uglify) built files.');
     console.log('  <tagname>:     If specified, an existing tag or branch to package. Otherwise\n' +
         '                 defaults to the most recent tag. Specify \'current\' to use whatever\n' +
         '                 is currently on your local machine (only use this for testing).');

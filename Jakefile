@@ -69,7 +69,7 @@ task('fixwhitespace', function() {
     }, complete);
 }, true);
 
-desc('builds then creates an npm package - jake pack[allow-pending,no-test,no-lint,no-build,<tagname>] or jake pack[help]');
+desc('builds then creates an npm package - jake pack[allow-pending,no-test,no-lint,no-build,no-compress,<tagname>] or jake pack[help]');
 task('pack', [], function () {
     require('./build/archive')(Array.prototype.slice.apply(arguments));
 });
