@@ -71,7 +71,7 @@ task('fixwhitespace', function() {
 
 desc('builds then creates an npm package - jake pack[allow-pending,no-test,no-lint,no-build,no-compress,<tagname>] or jake pack[help]');
 task('pack', [], function () {
-    require('./build/archive')(Array.prototype.slice.apply(arguments));
+    require('./build/pack')(Array.prototype.slice.apply(arguments));
 });
 
 desc('Runs Apache RAT to audit source file license headers');
