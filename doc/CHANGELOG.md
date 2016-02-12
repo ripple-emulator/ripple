@@ -19,6 +19,26 @@
 #
 -->
 
+## v0.9.33 - February 12, 2016
+
+Ripple has moved to it's own stand-alone github repo at <https://github.com/ripple-emulator/ripple>. Issues and requests should be reported at <https://github.com/ripple-emulator/ripple/issues>.
+
+* [Issue #9](https://github.com/ripple-emulator/ripple/issues/9): Added handling for `Media.MessageChannel` exec call: [2486d802](https://github.com/ripple-emulator/ripple/commit/2486d802)
+
+* [Issue #8](https://github.com/ripple-emulator/ripple/issues/8): Work around crash with Media plugin introduced by bug in Chrome 48: [d9e4866b](https://github.com/ripple-emulator/ripple/commit/d9e4866b)
+
+* [Issue #7](https://github.com/ripple-emulator/ripple/issues/7): Fix geolocation issues introduced by bug in in Chrome 48: [d9e4866b](https://github.com/ripple-emulator/ripple/commit/d9e4866b)
+
+* [Issue #6](https://github.com/ripple-emulator/ripple/issues/6): Added handling for `Geolocation.getPermission` exec call on Android: [70c2ff33](https://github.com/ripple-emulator/ripple/commit/70c2ff33)
+
+* Add support for Insomnia plugin ([cordova-plugin-insomnia](https://www.npmjs.com/package/cordova-plugin-insomnia)): [65c1034a](https://github.com/ripple-emulator/ripple/commit/65c1034a)
+
+* ScanditSDK fixes: [e2c2f848](https://github.com/ripple-emulator/ripple/commit/e2c2f848) and [6d8bfcff](https://github.com/ripple-emulator/ripple/commit/6d8bfcff)
+
+* [RIPPLE-99](https://issues.apache.org/jira/browse/RIPPLE-99) Updated emulation for Vibration API: [7578c471](https://github.com/ripple-emulator/ripple/commit/7578c471) 
+
+* [RIPPLE-100](https://issues.apache.org/jira/browse/RIPPLE-100) Fixed battery status event emulation: [7578c471](https://github.com/ripple-emulator/ripple/commit/7578c471)
+
 ## v0.9.32 - August 16, 2015
 
 * [RIPPLE-87](https://issues.apache.org/jira/browse/RIPPLE-87) Ripple can't emulate multi-page applications:
