@@ -19,6 +19,14 @@
 #
 -->
 
+## v0.9.34 - March 11, 2016
+
+* Don't display "I Haz Cheeseburger" dialog for status bar plugin: [4aec49f5](https://github.com/ripple-emulator/ripple/commit/4aec49f5)
+
+* Don't display "I Haz Cheeseburger" dialog for ionic keyboard plugin: [d304bf34](https://github.com/ripple-emulator/ripple/commit/d304bf34)
+
+* Better unhandled exec call response when no success or fail callback: [6cb5b65f](https://github.com/ripple-emulator/ripple/commit/6cb5b65f)
+
 ## v0.9.33 - February 12, 2016
 
 Ripple has moved to it's own stand-alone github repo at <https://github.com/ripple-emulator/ripple>. Issues and requests should be reported at <https://github.com/ripple-emulator/ripple/issues>.
