@@ -19,6 +19,10 @@
 #
 -->
 
+## v0.9.35 - March 11, 2016
+
+* README was missing from package
+
 ## v0.9.34 - March 11, 2016
 
 * Don't display "I Haz Cheeseburger" dialog for status bar plugin: [4aec49f5](https://github.com/ripple-emulator/ripple/commit/4aec49f5)
