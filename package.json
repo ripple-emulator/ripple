@@ -1,6 +1,6 @@
 {
   "name": "ripple-emulator",
-  "version": "0.9.35",
+  "version": "0.9.36",
   "description": "A browser based html5 mobile application development and testing tool",
   "homepage": "https://github.com/ripple-emulator/ripple",
   "author": {
@@ -37,7 +37,8 @@
     "express": "3.1.0",
     "moment": "1.x.x",
     "open": "0.0.3",
-    "request": "2.12.0"
+    "request": "2.12.0", 
+    "buffer-crc32": "0.2.5"
   },
   "devDependencies": {
     "bower": "1.3.12",
