@@ -19,6 +19,10 @@
 #
 -->
 
+## v0.9.36 - April 29, 2016
+
+* Fix Angular 2 issue with XMLHttpRequest
+
 ## v0.9.35 - March 11, 2016
 
 * README was missing from package
