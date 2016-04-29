@@ -19,7 +19,7 @@
 #
 -->
 
-## v0.9.35 - April 27, 2016
+## v0.9.36 - April 27, 2016
 
 * Fix Angular 2 issue with XMLHttpRequest
 
