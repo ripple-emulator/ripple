@@ -50,8 +50,7 @@
     "q": "^1.4.1",
     "semver": "^4.3.1",
     "shelljs": "^0.4.0",
-    "xmlhttprequest": "1.4.2",
-    "buffer-crc32": "0.2.5"
+    "xmlhttprequest": "1.4.2"
   },
   "files": [
     "README.md",
