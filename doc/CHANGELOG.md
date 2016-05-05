@@ -19,6 +19,10 @@
 #
 -->
 
+## v0.9.36 - May 4, 2016
+
+* Fix Angular 2 issue with XMLHttpRequest: [0973622e](https://github.com/ripple-emulator/ripple/commit/0973622e)
+
 ## v0.9.35 - March 11, 2016
 
 * README was missing from package
