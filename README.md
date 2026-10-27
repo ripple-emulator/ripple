@@ -19,9 +19,24 @@
 #
 -->
 
-# Ripple Emulator(tm)
+# Ripple Emulator(tm) — Archived
 
 A browser based, platform agnostic mobile application development and testing tool.
+
+## Archived — no longer maintained
+
+Ripple Emulator is archived and the `ripple-emulator` npm package is deprecated.
+It has known security vulnerabilities and will not receive further updates or
+security fixes. Do not use it for new projects.
+
+Use [Cordova Simulate](https://github.com/microsoft/cordova-simulate) instead.
+Cordova Simulate replaces Ripple for simulating Apache Cordova applications in
+the browser. See its README for installation and usage instructions.
+
+Version `0.9.37` is the final release, updating the documentation and package
+metadata to announce the archive. It does not fix the existing security issues.
+
+The documentation below is retained for historical reference.
 
 ## Build Requirements
 
@@ -95,7 +110,8 @@ This will install a global script called `ripple`. To see usage, run:
 
 ## Contributing
 
-If you like the project, and want to contribute code, please issue a pull request (on [GitHub](https://github.com/ripple-emulator/ripple/pulls)) into the `master` branch.
+This project is archived and is no longer accepting contributions. For ongoing
+development, see [Cordova Simulate](https://github.com/microsoft/cordova-simulate).
 
 ## Code Guidelines
 
